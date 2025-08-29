@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 1 Minimalism Coach — PWA</title>
+<meta name="theme-color" content="#10b981">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<style>
+  :root{--bg:#f9fafb;--card:#fff;--ink:#111827;--muted:#6b7280;--accent:#10b981;--line:#e5e7eb}
+  *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+  header{position:sticky;top:0;z-index:10;background:var(--card);border-bottom:1px solid var(--line)}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px} h1{font-size:28px;margin:0}
+  nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px} nav button{background:#fff;border:1px solid var(--line);color:var(--ink);padding:10px 12px;border-radius:10px;cursor:pointer}
+  nav button.active{border-color:var(--accent);color:#065f46;background:#ecfdf5;font-weight:600}
+  main{padding:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+  .card h2{margin:0 0 8px 0;font-size:20px}.muted{color:var(--muted)} .row{display:flex;align-items:center;gap:10px}
+  .btn{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
+  .btn.secondary{background:#111827;color:#fff}.btn.ghost{background:#fff;color:#111827;border:1px solid var(--line)}
+  .pill{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+  .list{display:grid;gap:8px;margin-top:8px}.item{display:flex;gap:10px;align-items:center;border:1px dashed var(--line);padding:8px;border-radius:10px;background:#fff}
+  input[type="text"],input[type="number"],select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+  label{font-size:12px;color:var(--muted)} .kpi{font-size:28px;font-weight:800}.hidden{display:none}
+  .table{width:100%;border-collapse:separate;border-spacing:0 6px}.table th{font-size:12px;text-align:left;color:var(--muted)}
+  .table td{background:#fff;border:1px solid var(--line);padding:8px;border-radius:8px}.tag{font-size:12px;padding:2px 6px;border-radius:999px;border:1px solid var(--line);background:#F3F4F6}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>🌿 Week 1 Minimalism Coach — Tối giản vật chất</h1>
+    <div class="muted">Checklist 7 ngày • Timer 15 phút • Trợ lý quyết định • Kho đồ • Capsule</div>
+    <nav id="tabs"></nav>
+  </div>
+</header>
+<main class="wrap">
+  <section id="tab-dashboard" class="tab">
+    <div class="grid">
+      <div class="card">
+        <h2>Tiến độ tuần</h2>
+        <div class="kpi" id="progress-text">0/7</div>
+        <div class="muted"><span class="pill" id="progress-pct">0%</span></div>
+        <div style="height:12px;background:#f3f4f6;border-radius:8px;margin-top:8px"><div id="bar" style="height:100%;width:0%;background:#10b981;border-radius:8px"></div></div>
+      </div>
+      <div class="card">
+        <h2>Mục đã gắn nhãn</h2>
+        <div class="grid" style="grid-template-columns:repeat(3,1fr)">
+          <div><div class="muted">Donate</div><div class="kpi" id="kpi-donate">0</div></div>
+          <div><div class="muted">Sell</div><div class="kpi" id="kpi-sell">0</div></div>
+          <div><div class="muted">Trash</div><div class="kpi" id="kpi-trash">0</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Bắt đầu nhanh</h2>
+        <div class="list">
+          <button class="btn" onclick="go('checklist')">✅ Checklist 7 ngày</button>
+          <button class="btn secondary" onclick="go('timer')">⏱️ Timer 15 phút</button>
+          <button class="btn ghost" onclick="go('decision')">🤔 Trợ lý quyết định</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-checklist" class="tab hidden">
+    <div class="card">
+      <h2>Checklist Tuần 1 — 7 nhiệm vụ</h2>
+      <div class="list" id="checklist"></div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn secondary" onclick="startTimer(15)">⏱️ Bắt đầu 15 phút</button>
+        <button class="btn ghost" onclick="resetChecklist()">Làm lại từ đầu</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-timer" class="tab hidden">
+    <div class="card">
+      <h2>Định giờ 15 phút</h2>
+      <div class="row" style="gap:16px;margin-top:10px">
+        <label>Phút <input type="number" id="mins" min="1" value="15"></label>
+        <label>Giây <input type="number" id="secs" min="0" value="0"></label>
+      </div>
+      <div class="row" style="gap:10px;margin:12px 0">
+        <button class="btn" onclick="startTimer()">Bắt đầu</button>
+        <button class="btn ghost" onclick="pauseTimer()">Tạm dừng</button>
+        <button class="btn secondary" onclick="resetTimer()">Đặt lại</button>
+      </div>
+      <div style="font-size:48px;font-weight:800" id="timer-label">15:00</div>
+    </div>
+  </section>
+
+  <section id="tab-decision" class="tab hidden">
+    <div class="grid">
+      <div class="card">
+        <h2>🤔 Trợ lý Keep / Donate / Sell / Trash</h2>
+        <div class="list">
+          <label>Tên món đồ<input id="dq-name" type="text" placeholder="VD: Áo sơ mi xanh"></label>
+          <label>Lần gần nhất sử dụng (tháng trước):<input id="dq-last" type="number" min="0" value="0"></label>
+          <label>Trạng thái món đồ
+            <select id="dq-cond"><option value="tốt">Tốt</option><option value="bình thường">Bình thường</option><option value="hỏng">Hỏng</option></select>
+          </label>
+          <label>Mức độ “spark joy”
+            <select id="dq-joy"><option value="cao">Cao</option><option value="trung bình">Trung bình</option><option value="thấp">Thấp</option></select>
+          </label>
+          <div class="row">
+            <button class="btn" onclick="runDecision()">Gợi ý</button>
+            <div id="dq-out" class="pill"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📦 Kho đồ tuần 1</h2>
+        <div class="list">
+          <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+            <label>Vị trí<input id="inv-room" type="text" placeholder="Phòng ngủ / Bếp / Phòng khách"></label>
+            <label>Loại<input id="inv-cat" type="text" placeholder="Quần áo / Sách / Điện tử..."></label>
+            <label>Tên món đồ<input id="inv-name" type="text" placeholder="VD: Máy sấy tóc cũ"></label>
+            <label>Hành động
+              <select id="inv-act"><option>Keep</option><option>Donate</option><option>Sell</option><option>Trash</option></select>
+            </label>
+          </div>
+          <button class="btn" onclick="addItem()">Thêm vào kho</button>
+        </div>
+        <table class="table" id="inv-table" style="margin-top:10px">
+          <thead><tr><th>Vị trí</th><th>Loại</th><th>Tên</th><th>Hành động</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="row" style="gap:10px;margin-top:6px">
+          <button class="btn ghost" onclick="exportCSV()">Xuất CSV</button>
+          <button class="btn ghost" onclick="exportJSON()">Sao lưu JSON</button>
+          <input type="file" id="jsonfile" accept="application/json" style="display:none">
+          <button class="btn ghost" onclick="document.getElementById('jsonfile').click()">Phục hồi JSON</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-about" class="tab hidden">
+    <div class="card"><h2>Hướng dẫn nhanh</h2>
+      <ol><li>Tick checklist hằng ngày.</li><li>Dùng Timer 15 phút.</li><li>Nhập thông tin món đồ để nhận gợi ý.</li><li>Lưu Kho đồ, xuất CSV/JSON.</li></ol>
+    </div>
+  </section>
+</main>
+
+<script>
+  // tabs
+  const TABS=[{id:'dashboard',label:'🏠 Trang chủ'},{id:'checklist',label:'✅ Checklist'},{id:'timer',label:'⏱ Timer'},{id:'decision',label:'🤔 Trợ lý & Kho'},{id:'about',label:'ℹ️ Hướng dẫn'}];
+  const nav=document.getElementById('tabs');TABS.forEach(t=>{const b=document.createElement('button');b.id='btn-'+t.id;b.textContent=t.label;b.onclick=()=>go(t.id);nav.appendChild(b)});
+  function go(id){document.querySelectorAll('.tab').forEach(el=>el.classList.add('hidden'));document.querySelector('#tab-'+id).classList.remove('hidden');document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));document.getElementById('btn-'+id).classList.add('active');localStorage.setItem('w1_tab',id);}
+  go(localStorage.getItem('w1_tab')||'dashboard');
+
+  // checklist
+  const tasks=["Bỏ 5 món đồ không dùng","Sắp xếp tủ quần áo","Dọn giấy tờ cũ","Góc làm việc gọn","Xóa app ít dùng","Sắp xếp kệ sách","Một ngày không mua sắm"];
+  const clDiv=document.getElementById('checklist');let checks=JSON.parse(localStorage.getItem('w1_checks')||'{}');
+  tasks.forEach((t,i)=>{const line=document.createElement('div');line.className='item';const cb=document.createElement('input');cb.type='checkbox';cb.checked=!!checks[i];cb.onchange=()=>{checks[i]=cb.checked;saveChecklist();};const span=document.createElement('span');span.textContent=t;line.appendChild(cb);line.appendChild(span);clDiv.appendChild(line)});
+  function saveChecklist(){localStorage.setItem('w1_checks',JSON.stringify(checks));refreshProgress()}
+  function resetChecklist(){checks={};saveChecklist();document.querySelectorAll('#checklist input[type=checkbox]').forEach(cb=>cb.checked=false)}
+  function refreshProgress(){const done=Object.values(checks).filter(Boolean).length;const pct=Math.round(done/tasks.length*100);document.getElementById('progress-text').textContent=done+"/"+tasks.length;document.getElementById('progress-pct').textContent=pct+"%";document.getElementById('bar').style.width=pct+"%"};refreshProgress();
+
+  // timer
+  let timer=null,remain=0;function fmt(s){const m=Math.floor(s/60),sec=s%60;return String(m).padStart(2,'0')+":"+String(sec).padStart(2,'0')}
+  function startTimer(mins=null){if(mins!==null){document.getElementById('mins').value=mins;document.getElementById('secs').value=0} if(timer) clearInterval(timer);const m=+document.getElementById('mins').value||0;const s=+document.getElementById('secs').value||0;remain=m*60+s;document.getElementById('timer-label').textContent=fmt(remain);timer=setInterval(()=>{remain--;document.getElementById('timer-label').textContent=fmt(remain);if(remain<=0){clearInterval(timer);timer=null;alert('Hết giờ!')}},1000)}
+  function pauseTimer(){if(timer){clearInterval(timer);timer=null}} function resetTimer(){pauseTimer();const m=+document.getElementById('mins').value||15;document.getElementById('timer-label').textContent=fmt(m*60)}
+
+  // decision
+  function runDecision(){const name=(document.getElementById('dq-name').value||'Món đồ').trim();const last=+document.getElementById('dq-last').value||0;const cond=document.getElementById('dq-cond').value;const joy=document.getElementById('dq-joy').value;let ans='Keep';if(cond==='hỏng'){ans='Trash'}else if(last>=6&&(joy==='thấp'||joy==='trung bình')){ans='Donate'}else if(last>=6&&joy==='cao'){ans='Sell'};document.getElementById('dq-out').textContent=name+' ⇒ '+ans}
+
+  // inventory
+  const tbody=document.querySelector('#inv-table tbody');let inv=JSON.parse(localStorage.getItem('w1_inventory')||'[]');
+  function addItem(){const room=document.getElementById('inv-room').value.trim();const cat=document.getElementById('inv-cat').value.trim();const name=document.getElementById('inv-name').value.trim();const act=document.getElementById('inv-act').value;if(!name){alert('Nhập tên món đồ');return}inv.push({room,cat,name,act});saveInv();renderInv();document.getElementById('inv-name').value=''}
+  function removeItem(i){inv.splice(i,1);saveInv();renderInv()}
+  function saveInv(){localStorage.setItem('w1_inventory',JSON.stringify(inv));refreshKPIs()}
+  function renderInv(){tbody.innerHTML='';inv.forEach((it,i)=>{const tr=document.createElement('tr');tr.innerHTML=`<td>${it.room||''}</td><td>${it.cat||''}</td><td>${it.name||''}</td><td><span class="tag">${it.act}</span></td><td><button class="btn ghost" onclick="removeItem(${i})">Xoá</button></td>`;tbody.appendChild(tr)})}
+  renderInv();
+  function refreshKPIs(){const d=inv.filter(x=>x.act==='Donate').length;const s=inv.filter(x=>x.act==='Sell').length;const t=inv.filter(x=>x.act==='Trash').length;document.getElementById('kpi-donate').textContent=d;document.getElementById('kpi-sell').textContent=s;document.getElementById('kpi-trash').textContent=t}
+  function exportCSV(){if(inv.length===0){alert('Chưa có dữ liệu');return}const rows=[['Vi tri','Loai','Ten','Hanh dong']].concat(inv.map(i=>[i.room,i.cat,i.name,i.act]));const csv=rows.map(r=>r.map(x=>`"${(x||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');download('week1_kho_do.csv','text/csv',csv)}
+  function exportJSON(){download('week1_kho_do.json','application/json',JSON.stringify(inv,null,2))}
+  document.getElementById('jsonfile').addEventListener('change',e=>{const f=e.target.files[0];if(!f) return;const reader=new FileReader();reader.onload=()=>{try{inv=JSON.parse(reader.result);saveInv();renderInv();alert('Phục hồi xong!')}catch(err){alert('File không hợp lệ')}};reader.readAsText(f)});
+  function download(name,mime,content){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+</script>
+<script>
+  if ('serviceWorker' in navigator) { window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js')); }
+</script>
+</body>
+</html>
